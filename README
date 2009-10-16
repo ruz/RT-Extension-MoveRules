@@ -1,0 +1,13 @@
+NAME
+    RT::Extension::MoveRules - control ticket movements between queues
+
+DESCRIPTION
+    If you move tickets between queues a lot then probably you want to
+    control when ticket moves where.
+
+LICENSE
+    Under the same terms as perl itself.
+
+AUTHOR
+    Ruslan Zakirov <Ruslan.Zakirov@gmail.com>
+
