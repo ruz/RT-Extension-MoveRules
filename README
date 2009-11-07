@@ -3,7 +3,10 @@ NAME
 
 DESCRIPTION
     If you move tickets between queues a lot then probably you want to
-    control when ticket moves where.
+    control this process. This extension allows you to configure rules which
+    are required to move a ticket from a queue to another queue, for example
+    if custom field X is equal to Y then a ticket can be moved from queue A
+    to B. As well you can define which fields should be set before move.
 
 LICENSE
     Under the same terms as perl itself.
