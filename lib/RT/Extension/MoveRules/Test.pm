@@ -29,6 +29,7 @@ sub import {
     } else {
         $args{'testing'} = 'RT::Extension::MoveRules';
     }
+    unshift @{ $args{'requires'} }, 'RT::Extension::ColumnMap';
     unshift @{ $args{'requires'} }, 'RT::Condition::Complex';
 
     $class->SUPER::import( %args );

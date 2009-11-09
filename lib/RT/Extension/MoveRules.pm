@@ -50,21 +50,23 @@ sub Check {
         @_
     );
 
-    my $config = $self->Config->{ lc $args->{'From'}->Name }
-        ->{ lc $args->{'To'}->Name };
+    my $config = $self->Config->{ lc $args{'From'}->Name }
+        ->{ lc $args{'To'}->Name };
     unless ( $config ) {
-        return (0, $args->{'Ticket'}->loc('Ticket move to that queue is not allowed'));
+        return (0, $args{'Ticket'}->loc('Ticket move to that queue is not allowed'));
     }
 
     if ( my $rule = $config->{'Rule'} ) {
         my $cond = RT::Condition::Complex->new(
-            TicketObj => $args{'Ticket'},
-            TransactionObj => $args{'Transaction'}
+            TicketObj      => $args{'Ticket'},
+            TransactionObj => $args{'Transaction'},
+            CurrentUser    => $RT::SystemUser,
         );
-        my $res = $cond->Solve(
-            $rule, From => $args{'From'}, To => $args{'To'}
+        my ($res, $tree, $desc) = $cond->Solve(
+            $rule, '' => $args{'Ticket'}, From => $args{'From'}, To => $args{'To'},
         );
-        return (0, $args->{'Ticket'}->loc('Ticket with this properties can not be moved to that queue');
+        return (0, $args{'Ticket'}->loc('Ticket can not be moved, the following rules are not met: [_1]', $desc))
+            unless $res;
     }
     return 1;
 }
@@ -73,10 +75,11 @@ use RT::Ticket;
 package RT::Ticket;
 
 {
-    my $old = \&SetQueue;
-    sub SetQueue {
+    my $old_sub = \&RT::Ticket::SetQueue;
+    no warnings 'redefine';
+    *RT::Ticket::SetQueue = sub {
         my $self = shift;
-        return $old->( $self, @_ ) unless $self->Type eq 'ticket';
+        return $old_sub->( $self, @_ ) unless $self->Type eq 'ticket';
 
         my $new_id = shift;
 
@@ -99,7 +102,7 @@ package RT::Ticket;
         );
         return ($status, $msg) unless $status;
 
-        return $old->( $self, $new_id, @_ );
+        return $old_sub->( $self, $new_id, @_ );
     }
 }
 
