@@ -3,11 +3,14 @@
 use strict;
 use warnings;
 
-use RT::Extension::MoveRules::Test tests => 11;
+use RT::Extension::MoveRules::Test tests => 12;
 
 RT->Config->Set(
     'MoveRules' =>
-    { },
+    {
+        From => 'From',
+        To   => 'To',
+    },
 );
 
 my $from = RT::Extension::MoveRules::Test->load_or_create_queue(
@@ -26,6 +29,7 @@ my $ticket;
 
 {
     my ($status, $msg) = $ticket->SetQueue( $to->id );
-    ok !$status, "failed to move: $msg";
+    ok $status, "moved ticket";
+    is $ticket->Queue, $to->id, "correct queue";
 }
 
