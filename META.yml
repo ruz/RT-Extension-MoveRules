@@ -15,6 +15,7 @@ meta-spec:
 name: RT-Extension-MoveRules
 no_index:
   directory:
+    - html
     - inc
     - t
 requires:
