@@ -49,6 +49,7 @@ sub Check {
         Ticket => undef,
         @_
     );
+    return 1 if $args{'From'}->id == $args{'To'}->id;
 
     my $config = $self->Config->{ lc $args{'From'}->Name }
         ->{ lc $args{'To'}->Name };
@@ -69,6 +70,17 @@ sub Check {
             unless $res;
     }
     return 1;
+}
+
+sub Possible {
+    my $self = shift;
+    my %args = @_;
+    $args{'Queue'} = $args{'Ticket'}->QueueObj
+        if !$args{'Queue'} && $args{'Ticket'};
+    return sort
+        $args{'Queue'}->Name,
+        map $_->{'To'},
+        values %{ $self->Config->{ lc $args{'Queue'}->Name } || {} };
 }
 
 use RT::Ticket;
