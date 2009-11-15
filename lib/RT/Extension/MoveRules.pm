@@ -77,10 +77,16 @@ sub Possible {
     my %args = @_;
     $args{'Queue'} = $args{'Ticket'}->QueueObj
         if !$args{'Queue'} && $args{'Ticket'};
-    return sort
-        $args{'Queue'}->Name,
+
+    my $config = $self->Config->{ lc $args{'Queue'}->Name } || {};
+
+    my @res;
+    push @res, $args{'Queue'}->Name unless $args{'SkipThis'};
+    push @res,
         map $_->{'To'},
-        values %{ $self->Config->{ lc $args{'Queue'}->Name } || {} };
+        grep { $args{'WithAction'} && !$_->{'ShowAction'}? 0 : 1 }
+        values %$config;
+    return sort @res;
 }
 
 use RT::Ticket;
