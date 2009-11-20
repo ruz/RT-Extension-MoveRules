@@ -48,10 +48,14 @@ my $cache_key = "SelectQueue---"
                 . "---$CheckQueueRight---$ShowAllQueues";
 
 my $rpath = $m->request_path;
+my $caller = $m->caller->path;
 if ( $Lite ) {
     # do nothing
 }
-elsif ( $rpath eq '/Ticket/Modify.html' ) {
+elsif (
+    $rpath eq '/Ticket/Modify.html'
+    && $caller eq '/Ticket/Elements/EditBasics'
+) {
     my $tid = $m->request_args->{'id'};
     my $ticket = LoadTicket( $tid );
 
