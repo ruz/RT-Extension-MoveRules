@@ -119,26 +119,71 @@ sub Check {
         Ticket => undef,
         @_
     );
+    my ($status, $msg);
+    ($status, $msg) = $self->CheckPossibility( %args );
+    return ($status, $msg) unless $status;
+    ($status, $msg) = $self->CheckRule( %args );
+    return ($status, $msg) unless $status;
+    ($status, $msg) = $self->CheckCondition( %args );
+    return ($status, $msg) unless $status;
+    return 1;
+}
+
+sub CheckPossibility {
+    my $self = shift;
+    my %args = (@_);
     return 1 if $args{'From'}->id == $args{'To'}->id;
 
-    my $config = $self->Config->{ lc $args{'From'}->Name }
-        ->{ lc $args{'To'}->Name };
-    unless ( $config ) {
-        return (0, $args{'Ticket'}->loc('Ticket move to that queue is not allowed'));
-    }
+    my $config = $self->Config( %args );
+    return 1 if $config;
+    return (0, $args{'Ticket'}->loc('Ticket move to that queue is not allowed'));
+}
 
-    if ( my $rule = $config->{'Rule'} ) {
-        my $cond = RT::Condition::Complex->new(
-            TicketObj      => $args{'Ticket'},
-            TransactionObj => $args{'Transaction'},
-            CurrentUser    => $RT::SystemUser,
-        );
-        my ($res, $tree, $desc) = $cond->Solve(
-            $rule, '' => $args{'Ticket'}, From => $args{'From'}, To => $args{'To'},
-        );
-        return (0, $args{'Ticket'}->loc('Ticket can not be moved, the following rules are not met: [_1]', $desc))
-            unless $res;
-    }
+sub CheckRule {
+    my $self = shift;
+    my %args = (@_);
+    return 1 if $args{'From'}->id == $args{'To'}->id;
+
+    my $config = $self->Config( %args );
+    die "CheckPossibility first" unless $config;
+
+    return $self->CheckConditionString(
+        %args, String => $config->{'Rule'}
+    );
+}
+
+sub CheckCondition {
+    my $self = shift;
+    my %args = (@_);
+    return 1 if $args{'From'}->id == $args{'To'}->id;
+
+    my $config = $self->Config( %args );
+    die "CheckPossibility first" unless $config;
+
+    return $self->CheckConditionString(
+        %args, String => $config->{'Condition'}
+    );
+}
+
+sub CheckConditionString {
+    my $self = shift;
+    my %args = (@_);
+
+    return 1 unless defined $args{'String'} && length $args{'String'};
+
+    my $cond = RT::Condition::Complex->new(
+        TicketObj      => $args{'Ticket'},
+        TransactionObj => $args{'Transaction'},
+        CurrentUser    => $RT::SystemUser,
+    );
+    my ($res, $tree, $desc) = $cond->Solve(
+        $args{'String'},
+        '' => $args{'Ticket'},
+        From => $args{'From'},
+        To => $args{'To'},
+    );
+    return (0, $args{'Ticket'}->loc('Ticket can not be moved until the following rules are met: [_1]', $desc))
+        unless $res;
     return 1;
 }
 
