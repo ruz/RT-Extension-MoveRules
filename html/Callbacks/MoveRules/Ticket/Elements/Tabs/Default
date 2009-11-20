@@ -25,7 +25,12 @@ foreach my $qid ( @queues ) {
     }
     next unless $queue->CurrentUserHasRight('CreateTicket');
 
-    my ($status, $msg) = RT::Extension::MoveRules->Check(
+    my ($status, $msg) = RT::Extension::MoveRules->CheckPossibility(
+        From => $current, To => $queue,
+        Ticket => $Ticket,
+    );
+    next unless $status;
+    ($status, $msg) = RT::Extension::MoveRules->CheckRule(
         From => $current, To => $queue,
         Ticket => $Ticket,
     );

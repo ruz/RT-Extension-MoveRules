@@ -72,10 +72,14 @@ elsif (
             next;
         }
 
-        my ($status, $msg) = RT::Extension::MoveRules->Check(
+        my ($status, $msg) = RT::Extension::MoveRules->CheckPossibility(
             From => $current, To => $queue,
             Ticket => $ticket,
         );
+        ($status, $msg) = RT::Extension::MoveRules->CheckRule(
+            From => $current, To => $queue,
+            Ticket => $ticket,
+        ) if $status;
 
         push @$list, {
             Id          => $queue->Id,
