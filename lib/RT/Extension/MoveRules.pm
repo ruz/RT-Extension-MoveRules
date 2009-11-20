@@ -19,6 +19,73 @@ queue, for example if custom field X is equal to Y then a ticket
 can be moved from queue A to B. As well you can define which
 fields should be set before move.
 
+=head1 INSTALLATION
+
+This extension works with RT 3.8 and depends on
+L<RT::Condition::Complex>. Otherwise installation process is
+usuall:
+
+    perl Makefile.PL
+    make
+    make install
+
+=head1 CONFIGURATION
+
+Extension is controlled with one config option C<@MoveRules>
+with the following syntax:
+
+    Set( @MoveRules,
+        {
+            From       => 'queue',
+            To         => 'queue',
+            Rule       => 'a rule',
+            Condition  => 'a rule',
+            ShowAction => 1/0,
+
+        },
+        ...
+    );
+
+=head2 From and To
+
+These keys define queues either by name or id. Both are
+mandatory options. Example:
+
+    Set( @MoveRules,
+        { From => 'X', To => 'Y' },
+    );
+
+Such configuration allows users to move tickets from queue
+"X" to "Y", but not any other move.
+
+=head2 ShowAction
+
+Boolean option that controls whether action for this move is
+displayed in the action menu (Open, Take) or not. By default
+no actions are displayed.
+
+=head2 Rule
+
+Rule is a condition defining additional limits on the move.
+This is a string with syntax implemented by
+L<RT::Condition::Complex> and L<RT::Extension::ColumnMap>.
+Syntax is close to TicketSQL, slightly different, some
+examples:
+
+    Rule => 'Subject = "good" AND Status = "open"',
+
+=head2 Condition
+
+Condition is very similar to L</Rule>. The difference
+is that users can not see a condition until they try
+to move a ticket.
+
+Moving limits between condition is up to you, but
+probably condition is better to leave with checks
+if a field is empty or not. For example:
+
+    Condition => 'CustomField{"X"} is not empty',
+
 =cut
 
 $RT::Config::META{'MoveRules'} = {
