@@ -96,14 +96,17 @@ $RT::Config::META{'MoveRules'} = {
 { my $cache;
 sub Config {
     my $self = shift;
-    return $cache if $cache;
-
-    $cache = {};
-    foreach my $rule ( RT->Config->Get('MoveRules') ) {
-        $cache->{ lc $rule->{'From'} }{ lc $rule->{'To'} }
-            = { %$rule };
+    unless ( $cache ) {
+        $cache = {};
+        foreach my $rule ( RT->Config->Get('MoveRules') ) {
+            $cache->{ lc $rule->{'From'} }{ lc $rule->{'To'} }
+                = { %$rule };
+        }
     }
-    return $cache;
+    return $cache unless @_;
+
+    my %args = @_;
+    return $cache->{ lc $args{'From'}->Name }{lc $args{'To'}->Name};
 } }
 
 use RT::Condition::Complex;
